@@ -1,0 +1,32 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/config.php';
+exigir_sesion();
+$titulo = $titulo ?? APP_NAME;
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
+<link rel="stylesheet" href="assets/estilo.css">
+</head>
+<body>
+<header class="barra">
+  <a class="barra__marca" href="empresas.php">
+    <span class="logo logo--pequeno">TG</span>
+    <span>
+      <strong><?= e(APP_NAME) ?></strong>
+      <small><?= e(CENTRO) ?></small>
+    </span>
+  </a>
+  <nav class="barra__nav">
+    <a href="empresas.php">Empresas</a>
+    <a href="familias.php">Familias</a>
+    <a href="formulario.php" class="boton boton--primario">+ Nueva empresa</a>
+    <a href="salir.php" class="boton boton--plano">Salir</a>
+  </nav>
+</header>
+<main class="contenedor">
