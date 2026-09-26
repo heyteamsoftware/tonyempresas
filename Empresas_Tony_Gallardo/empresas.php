@@ -32,10 +32,14 @@ $st = db()->prepare($sql);
 $st->execute($params);
 $empresas = $st->fetchAll();
 
-// Agrupadas por familia profesional.
+// Agrupadas por familia profesional (guardamos también el id para los cuestionarios).
 $grupos = [];
 foreach ($empresas as $em) {
-    $grupos[$em['familia_nombre'] ?? 'Sin familia asignada'][] = $em;
+    $clave = $em['familia_nombre'] ?? 'Sin familia asignada';
+    if (!isset($grupos[$clave])) {
+        $grupos[$clave] = ['familia_id' => $em['familia_id'], 'empresas' => []];
+    }
+    $grupos[$clave]['empresas'][] = $em;
 }
 
 $total  = count($empresas);
@@ -79,14 +83,20 @@ require __DIR__ . '/cabecera.php';
 <?php if ($total === 0): ?>
   <p class="vacio">No hay empresas que coincidan. <a href="formulario.php">Añade la primera</a>.</p>
 <?php else: ?>
-  <?php foreach ($grupos as $nombreFamilia => $lista): ?>
+  <?php foreach ($grupos as $nombreFamilia => $grupo): ?>
     <section class="familia">
       <h2 class="familia__titulo">
         <?= e($nombreFamilia) ?>
-        <span class="familia__conteo"><?= count($lista) ?></span>
+        <span class="familia__conteo"><?= count($grupo['empresas']) ?></span>
+        <?php if ($grupo['familia_id']): ?>
+          <span class="familia__cuestionarios">
+            <a href="cuestionario_alumnado.php?familia=<?= (int) $grupo['familia_id'] ?>" target="_blank">📋 Cuestionario alumnado</a>
+            <a href="cuestionario_empresa.php?familia=<?= (int) $grupo['familia_id'] ?>" target="_blank">🏢 Cuestionario empresa</a>
+          </span>
+        <?php endif; ?>
       </h2>
       <div class="rejilla">
-        <?php foreach ($lista as $em): ?>
+        <?php foreach ($grupo['empresas'] as $em): ?>
           <article class="tarjeta">
             <div class="tarjeta__cabecera">
               <h3><a href="ficha.php?id=<?= (int) $em['id'] ?>"><?= e($em['nombre']) ?></a></h3>
@@ -101,7 +111,11 @@ require __DIR__ . '/cabecera.php';
             </ul>
             <div class="tarjeta__acciones">
               <a href="ficha.php?id=<?= (int) $em['id'] ?>">Ver ficha</a>
-              <a href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
+              <?php if ($em['familia_id']): ?>
+                <a href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
+              <?php else: ?>
+                <a href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
+              <?php endif; ?>
             </div>
           </article>
         <?php endforeach; ?>

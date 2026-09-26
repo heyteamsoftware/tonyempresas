@@ -1,0 +1,93 @@
+:root {
+    --bg-color: #f1f5f9;
+    --container-bg: #ffffff;
+    --text-color: #1e293b;
+    --primary-color: #0f172a;
+    --border-color: #cbd5e1;
+    --input-bg: #ffffff;
+    --header-bg: #0f172a;
+    --required: #e11d48;
+    /* --accent-color se fija en línea por familia */
+}
+
+body.dark-mode {
+    --bg-color: #0f172a;
+    --container-bg: #1e293b;
+    --text-color: #f1f5f9;
+    --primary-color: #38bdf8;
+    --border-color: #334155;
+    --input-bg: #0f172a;
+    --header-bg: #1e293b;
+}
+
+body.cuestionario {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    margin: 0;
+    padding: 20px;
+    transition: background 0.3s ease;
+}
+
+.container { max-width: 950px; margin: 0 auto; background: var(--container-bg); padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+
+.controls { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.controls .volver { color: var(--text-color); text-decoration: none; font-weight: 600; }
+.controls .botones { display: flex; gap: 12px; }
+
+.controls button { padding: 10px 18px; cursor: pointer; border: none; border-radius: 6px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: transform 0.1s; }
+.btn-theme { background-color: #475569; color: white; }
+.btn-print { background-color: var(--accent-color); color: white; }
+.controls button:active { transform: scale(0.95); }
+
+.header-layout { border-bottom: 4px solid var(--accent-color); margin-bottom: 35px; padding-bottom: 20px; }
+header h1 { margin: 0; font-size: 1.6rem; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px; }
+.subtitle { font-weight: 600; font-size: 1.1rem; margin-top: 5px; opacity: 0.8; }
+.req-info { color: var(--required); font-size: 0.85rem; margin-top: 8px; }
+
+h2 { background: var(--header-bg); color: #fff; padding: 10px 15px; font-size: 1rem; margin-top: 35px; border-radius: 6px; text-transform: uppercase; }
+
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+.full-width { grid-column: span 2; }
+.form-group { margin-bottom: 15px; }
+label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
+.req { color: var(--required); }
+
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea {
+    width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;
+    background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; font-size: 1rem;
+}
+textarea { resize: none; min-height: 60px; overflow: hidden; }
+
+.print-proxy { display: none; white-space: pre-wrap; word-wrap: break-word; padding: 8px 0; border-bottom: 1px solid #000; font-size: 1rem; color: black; min-height: 1.2em; }
+
+table { width: 100%; border-collapse: collapse; margin: 15px 0; background: var(--input-bg); }
+th, td { border: 1px solid var(--border-color); padding: 10px; text-align: center; }
+th { background: rgba(0,0,0,0.05); font-size: 0.85rem; }
+td:first-child { text-align: left; font-weight: 500; width: 45%; }
+
+.option-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 10px 0; }
+.option-item { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.03); padding: 8px; border-radius: 4px; font-size: 0.9rem; }
+
+input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
+
+.signature-box { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+.sig-line { border-top: 2px solid var(--text-color); margin-top: 45px; text-align: center; font-weight: bold; font-size: 0.9rem; }
+
+@media print {
+    .controls { display: none !important; }
+    body.cuestionario { background: white !important; color: black !important; padding: 0; }
+    .container { box-shadow: none; border: none; max-width: 100%; width: 100%; padding: 0; }
+    h2 { background: #eee !important; color: black !important; border: 1px solid #000 !important; page-break-after: avoid; }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea { display: none !important; }
+    .print-proxy { display: block !important; }
+    .option-item { background: none !important; border: none; padding: 2px 0; }
+    .signature-box, h2, tr, .form-group, .option-group { page-break-inside: avoid; }
+}
+
+@media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+    .full-width { grid-column: span 1; }
+    .container { padding: 20px; }
+}

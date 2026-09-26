@@ -43,7 +43,12 @@ $fila = function (string $etiqueta, ?string $valor, ?string $enlace = null): voi
     </p>
   </div>
   <div class="ficha__acciones">
-    <a class="boton boton--primario" href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
+    <?php if ($em['familia_id']): ?>
+      <a class="boton boton--primario" href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
+    <?php else: ?>
+      <a class="boton boton--primario" href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
+    <?php endif; ?>
+    <a class="boton boton--plano" href="formulario.php?id=<?= (int) $em['id'] ?>">Cambiar familia</a>
     <form method="post" action="eliminar.php"
           onsubmit="return confirm('¿Seguro que quieres eliminar esta empresa? No se puede deshacer.');">
       <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
@@ -58,11 +63,39 @@ $fila = function (string $etiqueta, ?string $valor, ?string $enlace = null): voi
     <h2>Datos generales</h2>
     <dl>
       <?php
+      $fila('Nombre comercial', $em['nombre_comercial'] ?? null);
       $fila('Familia profesional', $em['familia_nombre']);
       $fila('Sector / actividad', $em['sector']);
       $fila('CIF', $em['cif']);
-      $fila('Ciclos relacionados', $em['ciclos']);
+      $fila('Tamaño de empresa', $em['tamanio'] ?? null);
+      $fila('Tipo de empresa', $em['tipo_empresa'] ?? null);
+      ?>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>Prácticas de alumnado</h2>
+    <dl>
+      <?php
+      $fila('Ciclos que puede acoger', $em['ciclos']);
       $fila('Plazas ofertadas', (string) $em['plazas']);
+      $fila('Actividades formativas', $em['actividades_formativas'] ?? null);
+      $fila('Instalaciones', $em['instalaciones'] ?? null);
+      $fila('¿Colaboró antes con centros?', !empty($em['colaborado_antes']) ? 'Sí' : null);
+      $fila('Tipo de colaboración previa', $em['tipo_colaboracion'] ?? null);
+      ?>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2>Organización y PRL</h2>
+    <dl>
+      <?php
+      $fila('Horario / periodo', $em['horario'] ?? null);
+      $fila('Jornada', $em['jornada'] ?? null);
+      $fila('Evaluación de riesgos actualizada', !empty($em['prl_evaluacion']) ? 'Sí' : null);
+      $fila('Formará en PRL al alumnado', !empty($em['prl_formacion']) ? 'Sí' : null);
+      $fila('Proporcionará los EPI necesarios', !empty($em['prl_epis']) ? 'Sí' : null);
       ?>
     </dl>
   </section>

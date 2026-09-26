@@ -12,6 +12,7 @@ $titulo = $titulo ?? APP_NAME;
 <meta name="robots" content="noindex, nofollow">
 <title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
 <link rel="stylesheet" href="assets/estilo.css">
+<link rel="icon" type="image/svg+xml" href="assets/icono.svg">
 </head>
 <body>
 <header class="barra">
@@ -25,7 +26,7 @@ $titulo = $titulo ?? APP_NAME;
   <nav class="barra__nav">
     <a href="empresas.php">Empresas</a>
     <a href="familias.php">Familias</a>
-    <a href="formulario.php" class="boton boton--primario">+ Nueva empresa</a>
+    <a href="nueva_empresa.php" class="boton boton--primario">+ Nueva empresa</a>
     <a href="salir.php" class="boton boton--plano">Salir</a>
   </nav>
 </header>

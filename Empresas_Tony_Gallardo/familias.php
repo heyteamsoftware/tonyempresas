@@ -62,7 +62,7 @@ require __DIR__ . '/cabecera.php';
 </form>
 
 <table class="tabla">
-  <thead><tr><th>Familia</th><th>Empresas</th><th></th></tr></thead>
+  <thead><tr><th>Familia</th><th>Empresas</th><th>Cuestionarios</th><th></th></tr></thead>
   <tbody>
   <?php foreach ($lista as $f): ?>
     <tr>
@@ -76,6 +76,10 @@ require __DIR__ . '/cabecera.php';
         </form>
       </td>
       <td><a href="empresas.php?familia=<?= (int) $f['id'] ?>"><?= (int) $f['total'] ?></a></td>
+      <td class="tabla__cuestionarios">
+        <a href="cuestionario_alumnado.php?familia=<?= (int) $f['id'] ?>" target="_blank">📋 Alumnado</a>
+        <a href="cuestionario_empresa.php?familia=<?= (int) $f['id'] ?>" target="_blank">🏢 Empresa</a>
+      </td>
       <td>
         <form method="post"
               onsubmit="return confirm('¿Eliminar la familia? Las empresas asociadas quedarán sin familia.');">

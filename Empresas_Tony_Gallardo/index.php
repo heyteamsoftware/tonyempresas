@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="robots" content="noindex, nofollow">
 <title><?= e(APP_NAME) ?></title>
 <link rel="stylesheet" href="assets/estilo.css">
+<link rel="icon" type="image/svg+xml" href="assets/icono.svg">
 </head>
 <body class="portada">
 
