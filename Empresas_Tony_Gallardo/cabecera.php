@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/empresa_lib.php';
 exigir_sesion();
+purgar_papelera();
 $titulo = $titulo ?? APP_NAME;
 ?>
 <!DOCTYPE html>
@@ -26,6 +28,9 @@ $titulo = $titulo ?? APP_NAME;
   <nav class="barra__nav">
     <a href="empresas.php">Empresas</a>
     <a href="familias.php">Familias</a>
+    <a href="compartir.php">Compartir enlace</a>
+    <a href="papelera.php">Papelera</a>
+    <a href="admin.php">Administración</a>
     <a href="nueva_empresa.php" class="boton boton--primario">+ Nueva empresa</a>
     <a href="salir.php" class="boton boton--plano">Salir</a>
   </nav>

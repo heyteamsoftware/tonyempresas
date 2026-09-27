@@ -19,12 +19,12 @@ $familiaNueva = '';
 $errores = [];
 
 if ($id > 0 && $_SERVER['REQUEST_METHOD'] === 'GET') {
-    $st = db()->prepare('SELECT * FROM empresas WHERE id = ?');
+    $st = db()->prepare('SELECT * FROM empresas WHERE id = ? AND eliminada_en IS NULL');
     $st->execute([$id]);
     $fila = $st->fetch();
     if (!$fila) {
         http_response_code(404);
-        exit('Empresa no encontrada.');
+        exit('Empresa no encontrada. Si está en la papelera, restáurala primero.');
     }
     $em = $fila;
 }
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id > 0) {
             $sets = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($datos)));
             $datos['id'] = $id;
-            db()->prepare("UPDATE empresas SET $sets WHERE id = :id")->execute($datos);
+            db()->prepare("UPDATE empresas SET $sets WHERE id = :id AND eliminada_en IS NULL")->execute($datos);
             $msg = 'Empresa actualizada correctamente.';
         } else {
             $cols = implode(', ', array_keys($datos));

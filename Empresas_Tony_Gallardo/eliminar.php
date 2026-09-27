@@ -10,6 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 comprobar_csrf();
 
 $id = (int) ($_POST['id'] ?? 0);
-db()->prepare('DELETE FROM empresas WHERE id = ?')->execute([$id]);
+db()->prepare('UPDATE empresas SET eliminada_en = NOW() WHERE id = ?')->execute([$id]);
 
-header('Location: empresas.php?ok=' . rawurlencode('Empresa eliminada.'));
+header('Location: empresas.php?ok=' . rawurlencode('Empresa movida a la papelera. Se borrará en firme a los 3 días.'));

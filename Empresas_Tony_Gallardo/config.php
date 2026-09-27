@@ -4,15 +4,11 @@ declare(strict_types=1);
 // Credenciales reales: fuera del repositorio (copiar credenciales.ejemplo.php).
 require __DIR__ . '/credenciales.php';
 
-const APP_NAME = 'Empresas Tony Gallardo';
-const CENTRO   = 'CIFP Tony Gallardo';
+const APP_NAME  = 'Empresas Tony Gallardo';
+const CENTRO    = 'CIFP Tony Gallardo';
+const EMAIL_RGPD = 'secretaria-35015887@gobiernodecanarias.org';
 
 date_default_timezone_set('Atlantic/Canary');
-
-function pin_del_dia(): string
-{
-    return date('dm');
-}
 
 function db(): PDO
 {
@@ -35,16 +31,33 @@ function db(): PDO
 function iniciar_sesion(): void
 {
     if (session_status() === PHP_SESSION_NONE) {
-        session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax']);
+        // Carpeta propia (fuera de la web) para las sesiones: la limpieza automática
+        // del servidor (compartida con otras apps) borra sesiones inactivas a los
+        // 24 minutos, lo que dejaría sin efecto la cookie de 30 días. Con carpeta y
+        // caducidad propias, la sesión dura lo que decimos.
+        $carpeta = '/var/www/.empresas_sesiones';
+        if (is_dir($carpeta) && is_writable($carpeta)) {
+            session_save_path($carpeta);
+        }
+        $treintaDias = 60 * 60 * 24 * 30;
+        ini_set('session.gc_maxlifetime', (string) $treintaDias);
+        ini_set('session.gc_probability', '1');
+        ini_set('session.gc_divisor', '1000');
+        session_set_cookie_params([
+            'lifetime'  => $treintaDias,
+            'path'      => '/',
+            'httponly'  => true,
+            'secure'    => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            'samesite'  => 'Lax',
+        ]);
         session_start();
     }
 }
 
-// La sesión sólo vale para el día cuyo PIN se introdujo.
 function sesion_valida(): bool
 {
     iniciar_sesion();
-    return isset($_SESSION['pin_dia']) && $_SESSION['pin_dia'] === pin_del_dia();
+    return !empty($_SESSION['autorizado']);
 }
 
 function exigir_sesion(): void

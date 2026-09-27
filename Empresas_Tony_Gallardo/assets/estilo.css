@@ -243,6 +243,9 @@ a { color: var(--azul-claro); }
 .linea-form { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .linea-form input { padding: 9px 12px; border: 1px solid var(--borde); border-radius: 8px; font-size: 15px; font-family: inherit; }
 .linea-form--compacta { margin: 0; }
+.linea-form input[readonly] { background: #f4f6f9; }
+.lista-enlaces { list-style: none; margin: 0; padding: 0; }
+.lista-enlaces li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--borde); }
 
 .tabla { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: var(--radio); overflow: hidden; box-shadow: var(--sombra); }
 .tabla th, .tabla td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--borde); }

@@ -10,7 +10,7 @@ $estado    = trim((string) ($_GET['estado'] ?? ''));
 $sql = 'SELECT e.*, f.nombre AS familia_nombre
         FROM empresas e
         LEFT JOIN familias f ON f.id = e.familia_id
-        WHERE 1=1';
+        WHERE e.eliminada_en IS NULL';
 $params = [];
 
 if ($busqueda !== '') {

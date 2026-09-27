@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $lista = db()->query(
     'SELECT f.id, f.nombre, COUNT(e.id) AS total
-     FROM familias f LEFT JOIN empresas e ON e.familia_id = f.id
+     FROM familias f LEFT JOIN empresas e ON e.familia_id = f.id AND e.eliminada_en IS NULL
      GROUP BY f.id, f.nombre, f.orden
      ORDER BY f.orden, f.nombre'
 )->fetchAll();

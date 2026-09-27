@@ -6,7 +6,7 @@ exigir_sesion();
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $st = db()->prepare('SELECT e.*, f.nombre AS familia_nombre
                      FROM empresas e LEFT JOIN familias f ON f.id = e.familia_id
-                     WHERE e.id = ?');
+                     WHERE e.id = ? AND e.eliminada_en IS NULL');
 $st->execute([$id]);
 $em = $st->fetch();
 
@@ -40,6 +40,7 @@ $fila = function (string $etiqueta, ?string $valor, ?string $enlace = null): voi
     <p>
       <span class="etiqueta etiqueta--<?= e(strtolower($em['estado'])) ?>"><?= e($em['estado']) ?></span>
       <?php if ($em['convenio']): ?><span class="etiqueta etiqueta--convenio">Convenio firmado</span><?php endif; ?>
+      <?php if (($em['origen'] ?? '') === 'externo'): ?><span class="etiqueta etiqueta--convenio">Recibida por enlace externo</span><?php endif; ?>
     </p>
   </div>
   <div class="ficha__acciones">

@@ -52,14 +52,30 @@ CREATE TABLE IF NOT EXISTS empresas (
   plazas            SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   convenio          TINYINT(1)   NOT NULL DEFAULT 0,
   estado            VARCHAR(20)  NOT NULL DEFAULT 'Activa',
+  origen            VARCHAR(20)  NOT NULL DEFAULT 'interno',
   observaciones     TEXT         DEFAULT NULL,
   creado_en         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  eliminada_en      DATETIME     DEFAULT NULL,
   PRIMARY KEY (id),
   KEY idx_nombre (nombre),
   KEY idx_estado (estado),
   CONSTRAINT fk_empresa_familia FOREIGN KEY (familia_id)
     REFERENCES familias (id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ajustes (
+  clave VARCHAR(50)  NOT NULL PRIMARY KEY,
+  valor VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS intentos_pin (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  dispositivo CHAR(32)     NOT NULL,
+  ip          VARCHAR(45)  NOT NULL,
+  creado_en   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_disp (dispositivo, creado_en),
+  KEY idx_ip (ip, creado_en)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT IGNORE INTO familias (nombre, orden) VALUES
