@@ -69,15 +69,6 @@ CREATE TABLE IF NOT EXISTS ajustes (
   valor VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS intentos_pin (
-  id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  dispositivo CHAR(32)     NOT NULL,
-  ip          VARCHAR(45)  NOT NULL,
-  creado_en   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_disp (dispositivo, creado_en),
-  KEY idx_ip (ip, creado_en)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 INSERT IGNORE INTO familias (nombre, orden) VALUES
   ('Servicios Socioculturales y a la Comunidad', 10),
   ('Seguridad y Medio Ambiente', 20),
