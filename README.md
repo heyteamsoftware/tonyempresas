@@ -40,6 +40,15 @@ dentro de la app ya iniciada.
 5. Asegurarse de que la carpeta `/var/www/.empresas_sesiones` existe, es propiedad de
    `www-data` y tiene permisos `700` (guarda las sesiones fuera de la carpeta pública).
 
+## Copias de seguridad
+
+El servidor hace un volcado diario automático (03:00) de la base de datos, comprimido,
+guardado en `/var/backups/empresas_tony` (fuera de la carpeta web) con 14 días de
+retención. Usa un usuario de MySQL de solo lectura (`empresas_tony_backup`), sin permisos
+de escritura. Configurado vía `/etc/cron.d/backup_empresas_tony` y
+`/usr/local/bin/backup_empresas_tony.sh`; no forma parte del código de la app porque vive
+a nivel de servidor, no de este repositorio.
+
 ## Requisitos
 
 PHP 8.0 o superior con la extensión PDO MySQL, y MySQL/MariaDB.
