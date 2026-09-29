@@ -221,6 +221,12 @@ a { color: var(--azul-claro); }
 .dato dd { margin: 0; }
 .texto-largo { margin: 0; white-space: normal; }
 
+/* Campos con varios valores (ciclos, tipo de empresa...): etiqueta arriba y
+   lista a todo lo ancho, en vez de embutirla en la columna estrecha. */
+.dato--lista { flex-direction: column; gap: 4px; }
+.lista-valores { margin: 0; padding-left: 20px; }
+.lista-valores li { padding: 2px 0; }
+
 /* ---------- Formularios y tablas ---------- */
 
 .formulario { display: grid; gap: 18px; }

@@ -26,6 +26,23 @@ $fila = function (string $etiqueta, ?string $valor, ?string $enlace = null): voi
     echo $enlace ? '<a href="' . e($enlace) . '">' . e($valor) . '</a>' : e($valor);
     echo '</dd></div>';
 };
+
+// Para campos con varios valores separados por ";" (ciclos, tipo de empresa...):
+// una lista, uno por línea, en vez de embutirlo todo en una sola línea de texto.
+$filaLista = function (string $etiqueta, ?string $valor): void {
+    if ($valor === null || trim($valor) === '') {
+        return;
+    }
+    $items = array_filter(array_map('trim', explode(';', $valor)), fn($v) => $v !== '');
+    if (!$items) {
+        return;
+    }
+    echo '<div class="dato dato--lista"><dt>' . e($etiqueta) . '</dt><dd><ul class="lista-valores">';
+    foreach ($items as $item) {
+        echo '<li>' . e($item) . '</li>';
+    }
+    echo '</ul></dd></div>';
+};
 ?>
 
 <?php if (!empty($_GET['ok'])): ?>
@@ -69,7 +86,7 @@ $fila = function (string $etiqueta, ?string $valor, ?string $enlace = null): voi
       $fila('Sector / actividad', $em['sector']);
       $fila('CIF', $em['cif']);
       $fila('Tamaño de empresa', $em['tamanio'] ?? null);
-      $fila('Tipo de empresa', $em['tipo_empresa'] ?? null);
+      $filaLista('Tipo de empresa', $em['tipo_empresa'] ?? null);
       ?>
     </dl>
   </section>
@@ -78,10 +95,10 @@ $fila = function (string $etiqueta, ?string $valor, ?string $enlace = null): voi
     <h2>Prácticas de alumnado</h2>
     <dl>
       <?php
-      $fila('Ciclos que puede acoger', $em['ciclos']);
+      $filaLista('Ciclos que puede acoger', $em['ciclos']);
       $fila('Plazas ofertadas', (string) $em['plazas']);
-      $fila('Actividades formativas', $em['actividades_formativas'] ?? null);
-      $fila('Instalaciones', $em['instalaciones'] ?? null);
+      $filaLista('Actividades formativas', $em['actividades_formativas'] ?? null);
+      $filaLista('Instalaciones', $em['instalaciones'] ?? null);
       $fila('¿Colaboró antes con centros?', !empty($em['colaborado_antes']) ? 'Sí' : null);
       $fila('Tipo de colaboración previa', $em['tipo_colaboracion'] ?? null);
       ?>
