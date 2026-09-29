@@ -13,7 +13,7 @@ $titulo = $titulo ?? APP_NAME;
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
-<link rel="stylesheet" href="assets/estilo.css">
+<link rel="stylesheet" href="assets/estilo.css?v=<?= @filemtime(__DIR__ . '/assets/estilo.css') ?: '1' ?>">
 <link rel="icon" type="image/svg+xml" href="assets/icono.svg">
 </head>
 <body>
