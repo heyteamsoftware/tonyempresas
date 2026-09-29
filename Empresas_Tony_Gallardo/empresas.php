@@ -14,9 +14,16 @@ $sql = 'SELECT e.*, f.nombre AS familia_nombre
 $params = [];
 
 if ($busqueda !== '') {
-    $sql .= ' AND (e.nombre LIKE :b OR e.sector LIKE :b OR e.localidad LIKE :b
-                   OR e.ciclos LIKE :b OR e.contacto_nombre LIKE :b)';
-    $params['b'] = '%' . $busqueda . '%';
+    // MySQL con sentencias preparadas reales no admite repetir el mismo marcador con
+    // nombre varias veces en una consulta: hace falta uno distinto por cada aparición.
+    $sql .= ' AND (e.nombre LIKE :b1 OR e.sector LIKE :b2 OR e.localidad LIKE :b3
+                   OR e.ciclos LIKE :b4 OR e.contacto_nombre LIKE :b5)';
+    $comodin = '%' . $busqueda . '%';
+    $params['b1'] = $comodin;
+    $params['b2'] = $comodin;
+    $params['b3'] = $comodin;
+    $params['b4'] = $comodin;
+    $params['b5'] = $comodin;
 }
 if ($familiaId > 0) {
     $sql .= ' AND e.familia_id = :f';
