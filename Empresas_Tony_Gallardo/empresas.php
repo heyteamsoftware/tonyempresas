@@ -77,8 +77,9 @@ require __DIR__ . '/cabecera.php';
       <div class="rejilla">
         <?php foreach ($grupo['empresas'] as $em): ?>
           <article class="tarjeta">
+            <a class="tarjeta__enlace" href="ficha.php?id=<?= (int) $em['id'] ?>" aria-label="Ver ficha de <?= e($em['nombre']) ?>"></a>
             <div class="tarjeta__cabecera">
-              <h3><a href="ficha.php?id=<?= (int) $em['id'] ?>"><?= e($em['nombre']) ?></a></h3>
+              <h3><?= e($em['nombre']) ?></h3>
               <span class="etiqueta etiqueta--<?= e(strtolower($em['estado'])) ?>"><?= e($em['estado']) ?></span>
             </div>
             <ul class="tarjeta__datos">
@@ -89,7 +90,6 @@ require __DIR__ . '/cabecera.php';
               <li>🎓 <?= (int) $em['plazas'] ?> plazas<?= $em['convenio'] ? ' · convenio firmado' : '' ?></li>
             </ul>
             <div class="tarjeta__acciones">
-              <a href="ficha.php?id=<?= (int) $em['id'] ?>">Ver ficha</a>
               <?php if ($em['familia_id']): ?>
                 <a href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
               <?php else: ?>

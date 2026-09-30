@@ -193,13 +193,22 @@ a { color: var(--azul-claro); }
   background: var(--panel); border-radius: var(--radio);
   box-shadow: var(--sombra); padding: 16px;
   display: flex; flex-direction: column; gap: 10px;
+  position: relative; cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
+.tarjeta:hover, .tarjeta:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(20, 57, 94, .18);
+}
+/* Enlace invisible que cubre toda la tarjeta (lleva a la ficha); los
+   elementos interactivos de encima (como "Editar") llevan z-index mayor
+   para seguir siendo clicables por su cuenta. */
+.tarjeta__enlace { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
 .tarjeta__cabecera { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
-.tarjeta__cabecera h3 { margin: 0; font-size: 17px; }
-.tarjeta__cabecera a { color: var(--azul); text-decoration: none; }
+.tarjeta__cabecera h3 { margin: 0; font-size: 17px; color: var(--azul); }
 .tarjeta__datos { list-style: none; margin: 0; padding: 0; font-size: 14px; color: var(--suave); }
 .tarjeta__datos li { margin-bottom: 4px; }
-.tarjeta__acciones { margin-top: auto; display: flex; gap: 14px; font-size: 14px; }
+.tarjeta__acciones { margin-top: auto; display: flex; gap: 14px; font-size: 14px; position: relative; z-index: 2; }
 
 .vacio { background: var(--panel); padding: 32px; border-radius: var(--radio); text-align: center; color: var(--suave); }
 
