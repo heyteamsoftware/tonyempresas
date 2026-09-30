@@ -140,9 +140,9 @@ a { color: var(--azul-claro); }
 .boton--primario { background: var(--acento); color: #3a2405; font-weight: 600; }
 .boton--plano { background: rgba(255, 255, 255, .18); color: #fff; }
 .contenedor .boton--plano { background: #e8ecf1; color: var(--texto); }
-.boton--pequeno { padding: 4px 10px; font-size: 12px; }
-.cambio-estado { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 .boton--peligro { background: var(--rojo); color: #fff; }
+.boton--exito { background: var(--verde); color: #fff; }
+.boton--aviso { background: #d97706; color: #fff; }
 
 .aviso { padding: 12px 16px; border-radius: var(--radio); margin: 0 0 16px; }
 .aviso--ok { background: #e4f6ed; color: #145c3c; }
@@ -214,7 +214,7 @@ a { color: var(--azul-claro); }
 /* ---------- Ficha ---------- */
 
 .ficha__cabecera { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: start; }
-.ficha__acciones { display: flex; gap: 10px; align-items: center; }
+.ficha__acciones { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 /* Lista continua de secciones (antes eran tarjetas sueltas en cuadrícula). */
 .paneles {
