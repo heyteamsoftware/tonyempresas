@@ -54,7 +54,7 @@ h2 { background: var(--header-bg); color: #fff; padding: 10px 15px; font-size: 1
 label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem; }
 .req { color: var(--required); }
 
-input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea {
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"], select, textarea {
     width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px;
     background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; font-size: 1rem;
 }

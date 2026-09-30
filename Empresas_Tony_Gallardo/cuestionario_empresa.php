@@ -44,6 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$errores) {
         $datos['familia_id'] = (int) $familia['id'];
         if ($id > 0) {
+            // El estado sólo se puede cambiar editando una empresa ya existente
+            // (al darla de alta siempre empieza "Pendiente", se revisa después).
+            $estadoPost = (string) ($_POST['estado'] ?? '');
+            $datos['estado'] = in_array($estadoPost, ESTADOS, true) ? $estadoPost : $em['estado'];
             $sets = implode(', ', array_map(fn($c) => "$c = :$c", array_keys($datos)));
             $datos['id'] = $id;
             db()->prepare("UPDATE empresas SET $sets WHERE id = :id AND eliminada_en IS NULL")->execute($datos);
@@ -99,6 +103,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <form method="post">
     <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
     <?php require __DIR__ . '/_campos_empresa.php'; ?>
+
+    <?php if ($id > 0): ?>
+    <h2>Estado</h2>
+    <div class="form-group" style="max-width:260px;">
+      <label>Estado de la empresa
+        <select name="estado">
+          <?php foreach (ESTADOS as $es): ?>
+            <option value="<?= e($es) ?>" <?= ($em['estado'] ?? '') === $es ? 'selected' : '' ?>><?= e($es) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </label>
+    </div>
+    <?php endif; ?>
+
     <div class="form-group" style="margin-top:24px;">
       <button class="btn-print" type="submit" style="font-size:1rem;padding:12px 28px;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">
         <?= $id > 0 ? 'Guardar cambios' : 'Registrar empresa' ?>

@@ -59,6 +59,16 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
       <?php if ($em['convenio']): ?><span class="etiqueta etiqueta--convenio">Convenio firmado</span><?php endif; ?>
       <?php if (($em['origen'] ?? '') === 'externo'): ?><span class="etiqueta etiqueta--convenio">Recibida por enlace externo</span><?php endif; ?>
     </p>
+    <p class="cambio-estado">
+      <?php foreach (ESTADOS as $es): if ($es === $em['estado']) continue; ?>
+        <form method="post" action="cambiar_estado.php" style="display:inline;">
+          <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
+          <input type="hidden" name="id" value="<?= (int) $em['id'] ?>">
+          <input type="hidden" name="estado" value="<?= e($es) ?>">
+          <button class="boton boton--plano boton--pequeno" type="submit">Marcar como <?= e($es) ?></button>
+        </form>
+      <?php endforeach; ?>
+    </p>
   </div>
   <div class="ficha__acciones">
     <?php if ($em['familia_id']): ?>

@@ -140,6 +140,8 @@ a { color: var(--azul-claro); }
 .boton--primario { background: var(--acento); color: #3a2405; font-weight: 600; }
 .boton--plano { background: rgba(255, 255, 255, .18); color: #fff; }
 .contenedor .boton--plano { background: #e8ecf1; color: var(--texto); }
+.boton--pequeno { padding: 4px 10px; font-size: 12px; }
+.cambio-estado { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 .boton--peligro { background: var(--rojo); color: #fff; }
 
 .aviso { padding: 12px 16px; border-radius: var(--radio); margin: 0 0 16px; }
