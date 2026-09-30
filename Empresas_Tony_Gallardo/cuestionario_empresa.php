@@ -36,6 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos = datos_empresa_desde_post();
     $errores = errores_empresa($datos);
 
+    $duplicada = empresa_duplicada_por_cif($datos['cif'], $id);
+    if ($duplicada !== null) {
+        $errores[] = 'Ya existe una empresa con ese CIF: "' . $duplicada . '". Si es la misma, edítala en vez de crear otra.';
+    }
+
     if (!$errores) {
         $datos['familia_id'] = (int) $familia['id'];
         if ($id > 0) {

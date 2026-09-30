@@ -113,6 +113,10 @@ a { color: var(--azul-claro); }
 .barra__marca small { display: block; font-weight: 400; opacity: .75; font-size: 12px; }
 .barra__nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .barra__nav > a { color: #fff; text-decoration: none; }
+.aviso-contador {
+  background: var(--acento); color: #3a2405 !important; font-weight: 700;
+  font-size: 13px; padding: 3px 10px; border-radius: 999px;
+}
 
 .contenedor { max-width: 1160px; margin: 0 auto; padding: 24px; }
 .pie { text-align: center; color: var(--suave); font-size: 13px; padding: 24px; }
@@ -265,4 +269,13 @@ a { color: var(--azul-claro); }
 @media (max-width: 600px) {
   .contenedor { padding: 16px; }
   .dato { flex-direction: column; gap: 2px; }
+}
+
+/* Ficha en limpio al imprimir: sin menú, botones ni sombras. */
+@media print {
+  .barra, .pie, .ficha__acciones, .migas, .aviso { display: none !important; }
+  body { background: #fff; }
+  .contenedor { padding: 0; max-width: 100%; }
+  .paneles { box-shadow: none; border: 1px solid var(--borde); }
+  .panel { break-inside: avoid; }
 }

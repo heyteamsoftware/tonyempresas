@@ -67,6 +67,7 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
       <a class="boton boton--primario" href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
     <?php endif; ?>
     <a class="boton boton--plano" href="formulario.php?id=<?= (int) $em['id'] ?>">Cambiar familia</a>
+    <button class="boton boton--plano" type="button" onclick="window.print()">🖨️ Imprimir</button>
     <form method="post" action="eliminar.php"
           onsubmit="return confirm('¿Seguro que quieres eliminar esta empresa? No se puede deshacer.');">
       <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">

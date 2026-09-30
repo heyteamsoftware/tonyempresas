@@ -39,6 +39,69 @@ function datos_empresa_desde_post(): array
     ];
 }
 
+/** Empresas (no en papelera) según los mismos filtros del listado: texto, familia y estado. */
+function buscar_empresas(string $busqueda, int $familiaId, string $estado): array
+{
+    $sql = 'SELECT e.*, f.nombre AS familia_nombre
+            FROM empresas e
+            LEFT JOIN familias f ON f.id = e.familia_id
+            WHERE e.eliminada_en IS NULL';
+    $params = [];
+
+    if ($busqueda !== '') {
+        // MySQL con sentencias preparadas reales no admite repetir el mismo marcador con
+        // nombre varias veces en una consulta: hace falta uno distinto por cada aparición.
+        $sql .= ' AND (e.nombre LIKE :b1 OR e.sector LIKE :b2 OR e.localidad LIKE :b3
+                       OR e.ciclos LIKE :b4 OR e.contacto_nombre LIKE :b5)';
+        $comodin = '%' . $busqueda . '%';
+        $params['b1'] = $comodin;
+        $params['b2'] = $comodin;
+        $params['b3'] = $comodin;
+        $params['b4'] = $comodin;
+        $params['b5'] = $comodin;
+    }
+    if ($familiaId > 0) {
+        $sql .= ' AND e.familia_id = :f';
+        $params['f'] = $familiaId;
+    }
+    if (in_array($estado, ESTADOS, true)) {
+        $sql .= ' AND e.estado = :e';
+        $params['e'] = $estado;
+    }
+    $sql .= ' ORDER BY f.orden IS NULL, f.orden, f.nombre, e.nombre';
+
+    $st = db()->prepare($sql);
+    $st->execute($params);
+    return $st->fetchAll();
+}
+
+/** Nombre de la empresa que ya tiene ese CIF, o null si no hay ninguna (fuera de $idActual). */
+function empresa_duplicada_por_cif(?string $cif, int $idActual = 0): ?string
+{
+    $cif = trim((string) $cif);
+    if ($cif === '') {
+        return null;
+    }
+    $sql = 'SELECT nombre FROM empresas WHERE UPPER(cif) = UPPER(?) AND eliminada_en IS NULL';
+    $params = [$cif];
+    if ($idActual > 0) {
+        $sql .= ' AND id != ?';
+        $params[] = $idActual;
+    }
+    $st = db()->prepare($sql);
+    $st->execute($params);
+    $nombre = $st->fetchColumn();
+    return $nombre !== false ? (string) $nombre : null;
+}
+
+/** Nº de empresas pendientes de revisar (sin contar la papelera). */
+function total_pendientes(): int
+{
+    return (int) db()->query(
+        "SELECT COUNT(*) FROM empresas WHERE estado = 'Pendiente' AND eliminada_en IS NULL"
+    )->fetchColumn();
+}
+
 function errores_empresa(array $d): array
 {
     $err = [];

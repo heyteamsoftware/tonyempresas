@@ -97,6 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos = datos_empresa_desde_post();
     $errores = errores_empresa($datos);
 
+    $duplicada = empresa_duplicada_por_cif($datos['cif']);
+    if ($duplicada !== null) {
+        $errores[] = 'Ya hay una empresa registrada con ese CIF. Si cree que es un error, contacte con el centro.';
+    }
+
     $familiaOtra = trim((string) ($_POST['familia_otra'] ?? ''));
     if ($esOtras) {
         if ($familiaOtra === '') {

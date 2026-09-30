@@ -5,6 +5,7 @@ require_once __DIR__ . '/empresa_lib.php';
 exigir_sesion();
 purgar_papelera();
 $titulo = $titulo ?? APP_NAME;
+$pendientes = total_pendientes();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -27,6 +28,9 @@ $titulo = $titulo ?? APP_NAME;
   </a>
   <nav class="barra__nav">
     <a href="empresas.php">Empresas</a>
+    <?php if ($pendientes > 0): ?>
+      <a href="empresas.php?estado=Pendiente" class="aviso-contador" title="Empresas pendientes de revisar"><?= $pendientes ?> pendiente<?= $pendientes === 1 ? '' : 's' ?></a>
+    <?php endif; ?>
     <a href="familias.php">Familias</a>
     <a href="compartir.php">Compartir enlace</a>
     <a href="papelera.php">Papelera</a>

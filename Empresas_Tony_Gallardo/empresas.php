@@ -1,43 +1,14 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
+require __DIR__ . '/empresa_lib.php';
 exigir_sesion();
 
 $busqueda  = trim((string) ($_GET['q'] ?? ''));
 $familiaId = isset($_GET['familia']) ? (int) $_GET['familia'] : 0;
 $estado    = trim((string) ($_GET['estado'] ?? ''));
 
-$sql = 'SELECT e.*, f.nombre AS familia_nombre
-        FROM empresas e
-        LEFT JOIN familias f ON f.id = e.familia_id
-        WHERE e.eliminada_en IS NULL';
-$params = [];
-
-if ($busqueda !== '') {
-    // MySQL con sentencias preparadas reales no admite repetir el mismo marcador con
-    // nombre varias veces en una consulta: hace falta uno distinto por cada aparición.
-    $sql .= ' AND (e.nombre LIKE :b1 OR e.sector LIKE :b2 OR e.localidad LIKE :b3
-                   OR e.ciclos LIKE :b4 OR e.contacto_nombre LIKE :b5)';
-    $comodin = '%' . $busqueda . '%';
-    $params['b1'] = $comodin;
-    $params['b2'] = $comodin;
-    $params['b3'] = $comodin;
-    $params['b4'] = $comodin;
-    $params['b5'] = $comodin;
-}
-if ($familiaId > 0) {
-    $sql .= ' AND e.familia_id = :f';
-    $params['f'] = $familiaId;
-}
-if (in_array($estado, ESTADOS, true)) {
-    $sql .= ' AND e.estado = :e';
-    $params['e'] = $estado;
-}
-$sql .= ' ORDER BY f.orden IS NULL, f.orden, f.nombre, e.nombre';
-
-$st = db()->prepare($sql);
-$st->execute($params);
-$empresas = $st->fetchAll();
+$empresas = buscar_empresas($busqueda, $familiaId, $estado);
 
 // Agrupadas por familia profesional (guardamos también el id para los cuestionarios).
 $grupos = [];
@@ -85,6 +56,7 @@ require __DIR__ . '/cabecera.php';
   </select>
   <button class="boton boton--primario" type="submit">Filtrar</button>
   <a class="boton boton--plano" href="empresas.php">Limpiar</a>
+  <a class="boton boton--plano" href="exportar.php?<?= e(http_build_query(['q' => $busqueda, 'familia' => $familiaId ?: '', 'estado' => $estado])) ?>">⬇️ Exportar a Excel</a>
 </form>
 
 <?php if ($total === 0): ?>
