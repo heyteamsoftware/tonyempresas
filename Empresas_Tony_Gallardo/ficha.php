@@ -67,17 +67,24 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
       <a class="boton boton--primario" href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
     <?php endif; ?>
     <?php
-    $coloresEstado = ['Activa' => 'boton--exito', 'Pendiente' => 'boton--aviso', 'Inactiva' => 'boton--peligro'];
-    foreach (ESTADOS as $es):
-        if ($es === $em['estado']) continue;
+    // Activa/Inactiva es un interruptor (un solo botón); Pendiente es aparte.
+    $destino = $em['estado'] === 'Activa' ? 'Inactiva' : 'Activa';
+    $colorDestino = $destino === 'Activa' ? 'boton--exito' : 'boton--peligro';
     ?>
+    <form method="post" action="cambiar_estado.php" style="display:inline;">
+      <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
+      <input type="hidden" name="id" value="<?= (int) $em['id'] ?>">
+      <input type="hidden" name="estado" value="<?= e($destino) ?>">
+      <button class="boton <?= $colorDestino ?>" type="submit">Marcar como <?= e($destino) ?></button>
+    </form>
+    <?php if ($em['estado'] !== 'Pendiente'): ?>
       <form method="post" action="cambiar_estado.php" style="display:inline;">
         <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
         <input type="hidden" name="id" value="<?= (int) $em['id'] ?>">
-        <input type="hidden" name="estado" value="<?= e($es) ?>">
-        <button class="boton <?= $coloresEstado[$es] ?>" type="submit">Marcar como <?= e($es) ?></button>
+        <input type="hidden" name="estado" value="Pendiente">
+        <button class="boton boton--aviso" type="submit">Marcar como Pendiente</button>
       </form>
-    <?php endforeach; ?>
+    <?php endif; ?>
     <a class="boton boton--plano" href="formulario.php?id=<?= (int) $em['id'] ?>">Cambiar familia</a>
     <button class="boton boton--plano" type="button" onclick="window.print()">🖨️ Imprimir</button>
     <form method="post" action="eliminar.php"
