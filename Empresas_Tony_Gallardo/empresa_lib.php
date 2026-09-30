@@ -1,9 +1,15 @@
 <?php
 declare(strict_types=1);
 
-function lista_desde_post(string $campo): string
+function lista_desde_post(string $campo, string $campoOtro = ''): string
 {
     $items = array_filter(array_map('trim', (array) ($_POST[$campo] ?? [])), fn($v) => $v !== '');
+    if ($campoOtro !== '') {
+        $otro = trim((string) ($_POST[$campoOtro] ?? ''));
+        if ($otro !== '') {
+            $items[] = 'Otros: ' . $otro;
+        }
+    }
     return implode('; ', $items);
 }
 
@@ -13,6 +19,21 @@ function marcado(string $opcion, ?string $valorGuardado): bool
         return false;
     }
     return in_array($opcion, array_map('trim', explode(';', $valorGuardado)), true);
+}
+
+/** Texto guardado en el "Otros" de una lista (el elemento que empieza por "Otros: "). */
+function texto_otro(?string $valorGuardado): string
+{
+    if (!$valorGuardado) {
+        return '';
+    }
+    foreach (explode(';', $valorGuardado) as $item) {
+        $item = trim($item);
+        if (str_starts_with($item, 'Otros: ')) {
+            return substr($item, strlen('Otros: '));
+        }
+    }
+    return '';
 }
 
 function texto_post(string $campo): ?string
@@ -33,7 +54,7 @@ function datos_empresa_desde_post(): array
         'localidad'       => texto_post('localidad'),
         'direccion'       => texto_post('direccion'),
         'contacto_nombre' => texto_post('contacto_nombre'),
-        'ciclos'          => lista_desde_post('ciclos') ?: null,
+        'ciclos'          => lista_desde_post('ciclos', 'ciclos_otro') ?: null,
         'plazas'          => max(0, min(999, (int) ($_POST['plazas'] ?? 0))),
         'observaciones'   => texto_post('observaciones'),
     ];

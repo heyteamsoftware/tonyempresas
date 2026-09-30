@@ -33,6 +33,11 @@
     <?php endforeach; ?>
   </div>
 <?php endif; ?>
+<div class="form-group" style="max-width:420px;margin-top:10px;">
+  <label>Otro ciclo (si no está en la lista):</label>
+  <input type="text" name="ciclos_otro" maxlength="120" placeholder="Escríbelo aquí"
+         value="<?= e(texto_otro($em['ciclos'] ?? null)) ?>">
+</div>
 <div class="form-group" style="max-width:300px;margin-top:10px;">
   <label>Nº de alumnos que puede acoger:</label>
   <input type="number" name="plazas" min="0" max="999" value="<?= (int) ($em['plazas'] ?? 0) ?>">
