@@ -72,6 +72,9 @@ td:first-child { text-align: left; font-weight: 500; width: 45%; }
 
 input[type="checkbox"], input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
 
+[hidden] { display: none !important; }
+.ciclos-familia { margin-bottom: 14px; }
+
 .signature-box { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
 .sig-line { border-top: 2px solid var(--text-color); margin-top: 45px; text-align: center; font-weight: bold; font-size: 0.9rem; }
 

@@ -9,6 +9,7 @@ $familiaId = isset($_GET['familia']) ? (int) $_GET['familia'] : 0;
 $estado    = trim((string) ($_GET['estado'] ?? ''));
 
 $empresas = buscar_empresas($busqueda, $familiaId, $estado);
+$mapaFamilias = familias_por_empresa(array_column($empresas, 'id'));
 
 header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename="empresas_' . date('Y-m-d') . '.csv"');
@@ -28,7 +29,7 @@ fputcsv($salida, [
 foreach ($empresas as $em) {
     fputcsv($salida, [
         $em['nombre'],
-        $em['familia_nombre'] ?? 'Sin familia asignada',
+        isset($mapaFamilias[(int) $em['id']]) ? implode('; ', array_column($mapaFamilias[(int) $em['id']], 'nombre')) : 'Sin familia asignada',
         $em['estado'],
         $em['sector'],
         $em['cif'],

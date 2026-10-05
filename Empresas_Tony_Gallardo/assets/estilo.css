@@ -219,6 +219,11 @@ a { color: var(--azul-claro); }
   text-decoration: none; border: 2px solid transparent; transition: border-color .15s, transform .1s;
 }
 .tarjeta-familia:hover { border-color: var(--azul-claro); transform: translateY(-2px); }
+/* Variante con casilla (elegir varias familias) */
+.tarjeta-familia { position: relative; cursor: pointer; }
+.tarjeta-familia input { position: absolute; opacity: 0; pointer-events: none; }
+.tarjeta-familia:has(input:checked) { border-color: var(--azul-claro); background: #eef6ff; }
+.tarjeta-familia:has(input:checked)::after { content: "✓"; position: absolute; top: 8px; right: 12px; color: var(--azul-claro); font-weight: 700; }
 
 /* ---------- Ficha ---------- */
 

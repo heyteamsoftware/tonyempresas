@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/config.php';
+require __DIR__ . '/empresa_lib.php';
 exigir_sesion();
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$st = db()->prepare('SELECT e.*, f.nombre AS familia_nombre
-                     FROM empresas e LEFT JOIN familias f ON f.id = e.familia_id
-                     WHERE e.id = ? AND e.eliminada_en IS NULL');
+$st = db()->prepare('SELECT e.* FROM empresas e WHERE e.id = ? AND e.eliminada_en IS NULL');
 $st->execute([$id]);
 $em = $st->fetch();
 
@@ -14,6 +13,9 @@ if (!$em) {
     http_response_code(404);
     exit('Empresa no encontrada.');
 }
+
+$familiasEmpresa = familias_de_empresa((int) $em['id']);
+$nombresFamilias = array_column($familiasEmpresa, 'nombre');
 
 $titulo = $em['nombre'];
 require __DIR__ . '/cabecera.php';
@@ -52,7 +54,7 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
 <div class="ficha__cabecera">
   <div>
     <p class="migas"><a href="empresas.php">Empresas</a> ›
-      <?= e($em['familia_nombre'] ?? 'Sin familia asignada') ?></p>
+      <?= e($nombresFamilias ? implode(' · ', $nombresFamilias) : 'Sin familia asignada') ?></p>
     <h1 class="titulo-pagina"><?= e($em['nombre']) ?></h1>
     <p>
       <span class="etiqueta etiqueta--<?= e(strtolower($em['estado'])) ?>"><?= e($em['estado']) ?></span>
@@ -61,11 +63,7 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
     </p>
   </div>
   <div class="ficha__acciones">
-    <?php if ($em['familia_id']): ?>
-      <a class="boton boton--primario" href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
-    <?php else: ?>
-      <a class="boton boton--primario" href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
-    <?php endif; ?>
+    <a class="boton boton--primario" href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
     <?php
     // Activa/Inactiva es un interruptor (un solo botón); Pendiente es aparte.
     $destino = $em['estado'] === 'Activa' ? 'Inactiva' : 'Activa';
@@ -85,7 +83,6 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
         <button class="boton boton--aviso" type="submit">Marcar como Pendiente</button>
       </form>
     <?php endif; ?>
-    <a class="boton boton--plano" href="formulario.php?id=<?= (int) $em['id'] ?>">Cambiar familia</a>
     <button class="boton boton--plano" type="button" onclick="window.print()">🖨️ Imprimir</button>
     <form method="post" action="eliminar.php"
           onsubmit="return confirm('¿Seguro que quieres eliminar esta empresa? No se puede deshacer.');">
@@ -102,7 +99,11 @@ $filaLista = function (string $etiqueta, ?string $valor): void {
     <dl>
       <?php
       $fila('Nombre comercial', $em['nombre_comercial'] ?? null);
-      $fila('Familia profesional', $em['familia_nombre']);
+      if (count($nombresFamilias) > 1) {
+          $filaLista('Familias profesionales', implode('; ', $nombresFamilias));
+      } else {
+          $fila('Familia profesional', $nombresFamilias[0] ?? null);
+      }
       $fila('Sector / actividad', $em['sector']);
       $fila('CIF', $em['cif']);
       $fila('Tamaño de empresa', $em['tamanio'] ?? null);

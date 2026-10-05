@@ -64,6 +64,17 @@ CREATE TABLE IF NOT EXISTS empresas (
     REFERENCES familias (id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Una empresa puede pertenecer a varias familias profesionales.
+-- empresas.familia_id se mantiene como "familia principal" (la primera del catálogo).
+CREATE TABLE IF NOT EXISTS empresa_familias (
+  empresa_id INT UNSIGNED NOT NULL,
+  familia_id INT UNSIGNED NOT NULL,
+  PRIMARY KEY (empresa_id, familia_id),
+  KEY idx_familia (familia_id),
+  CONSTRAINT fk_ef_empresa FOREIGN KEY (empresa_id) REFERENCES empresas (id) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_ef_familia FOREIGN KEY (familia_id) REFERENCES familias (id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS ajustes (
   clave VARCHAR(50)  NOT NULL PRIMARY KEY,
   valor VARCHAR(255) NOT NULL

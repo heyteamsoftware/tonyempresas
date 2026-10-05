@@ -13,14 +13,18 @@ dentro de la app ya iniciada.
 ## Funcionalidad
 
 - Listado de empresas **agrupado por familia profesional**, con buscador y filtros por
-  familia y estado.
+  familia y estado. Una empresa puede pertenecer a **varias familias** (tabla
+  `empresa_familias`) y aparece en cada una; `empresas.familia_id` queda como la familia
+  principal.
 - Ficha completa de cada empresa, alta y edición por cualquier profesor con acceso.
 - Gestión de familias profesionales: añadir, renombrar y eliminar.
 - Cuestionarios imprimibles de perfil de alumnado y de alta de empresa, personalizados
   por familia profesional.
 - **Enlace de registro externo**: se puede compartir con una empresa para que rellene
   sus propios datos sin necesidad de PIN ni cuenta. Entra como "Pendiente" hasta que el
-  profesorado la revisa. Incluye aviso de protección de datos (RGPD).
+  profesorado la revisa. Incluye aviso de protección de datos (RGPD). La empresa elige
+  una o varias familias profesionales al abrir el enlace, y se le muestran los ciclos de
+  cada una.
 - **Papelera**: las empresas eliminadas no se borran al momento, quedan 3 días
   recuperables antes de borrarse en firme automáticamente.
 - **Administración**: sección con contraseña propia donde se gestiona el enlace de

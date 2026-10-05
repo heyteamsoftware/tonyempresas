@@ -6,9 +6,11 @@ require __DIR__ . '/empresa_lib.php';
 iniciar_sesion();
 
 $token = (string) ($_GET['t'] ?? $_POST['t'] ?? '');
-$familiaRaw = (string) ($_GET['familia'] ?? $_POST['familia'] ?? '');
-$esOtras = $familiaRaw === 'otras';
-$familiaId = $esOtras ? 0 : (int) $familiaRaw;
+$esPost = $_SERVER['REQUEST_METHOD'] === 'POST';
+$seleccion = familias_desde_request($esPost ? $_POST : $_GET);
+$idsSel = $seleccion['ids'];
+$esOtras = $seleccion['otras'];
+$haySeleccion = $idsSel || $esOtras;
 $errores = [];
 $em = [];
 
@@ -22,14 +24,17 @@ function pagina_publica(string $titulo, string $acento, callable $contenido): vo
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title><?= e($titulo) ?> · <?= e(APP_NAME) ?></title>
-<link rel="stylesheet" href="assets/cuestionario.css">
+<link rel="stylesheet" href="assets/cuestionario.css?v=<?= @filemtime(__DIR__ . '/assets/cuestionario.css') ?: '1' ?>">
 <link rel="icon" type="image/svg+xml" href="assets/icono.svg">
 <style>
 :root { --accent-color: <?= e($acento) ?>; }
 .mensaje { text-align: center; padding: 30px 10px; }
 .familias-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 16px; }
-.familias-lista a { display: block; padding: 18px 14px; border: 2px solid var(--border-color); border-radius: 10px; text-align: center; font-weight: 600; color: var(--text-color); text-decoration: none; }
-.familias-lista a:hover { border-color: var(--accent-color); }
+.familias-lista label { position: relative; display: block; padding: 18px 14px; border: 2px solid var(--border-color); border-radius: 10px; text-align: center; font-weight: 600; color: var(--text-color); cursor: pointer; margin: 0; }
+.familias-lista label:hover { border-color: var(--accent-color); }
+.familias-lista input { position: absolute; opacity: 0; pointer-events: none; }
+.familias-lista label:has(input:checked) { border-color: var(--accent-color); background: rgba(20, 57, 94, .08); }
+.familias-lista label:has(input:checked)::after { content: "✓"; position: absolute; top: 6px; right: 12px; color: var(--accent-color); font-weight: 700; }
 .trampa { position: absolute; left: -9999px; height: 0; overflow: hidden; }
 </style>
 </head>
@@ -39,7 +44,7 @@ function pagina_publica(string $titulo, string $acento, callable $contenido): vo
     <div class="botones"><button class="btn-theme" type="button" onclick="toggleDarkMode()">🌓 Modo oscuro</button></div></div>
   <?php $contenido(); ?>
 </div>
-<script src="assets/cuestionario.js"></script>
+<script src="assets/cuestionario.js?v=<?= @filemtime(__DIR__ . '/assets/cuestionario.js') ?: '1' ?>"></script>
 </body>
 </html>
 <?php
@@ -60,32 +65,47 @@ if (isset($_GET['gracias'])) {
     exit;
 }
 
-if ($esOtras) {
-    $familia = ['id' => 0, 'nombre' => 'Otras familias profesionales'];
-} else {
-    $st = db()->prepare('SELECT id, nombre FROM familias WHERE id = ?');
-    $st->execute([$familiaId]);
-    $familia = $st->fetch();
-}
-
-if (!$familia) {
+// Paso 1: elegir una o varias familias profesionales.
+if (!$esPost && (!$haySeleccion || isset($_GET['elegir']))) {
     $todas = familias();
-    pagina_publica('Registro de empresa', '#14395e', function () use ($todas, $token) {
-        echo '<header class="header-layout"><h1>Registro de empresa colaboradora</h1>';
-        echo '<p class="subtitle">Seleccione la familia profesional con la que desea colaborar</p></header>';
-        echo '<div class="familias-lista">';
-        foreach ($todas as $f) {
-            echo '<a href="registro.php?t=' . e(urlencode($token)) . '&amp;familia=' . (int) $f['id'] . '">' . e($f['nombre']) . '</a>';
-        }
-        echo '<a href="registro.php?t=' . e(urlencode($token)) . '&amp;familia=otras">Otras familias profesionales</a>';
-        echo '</div>';
+    $sinElegir = isset($_GET['elegido']) && !$haySeleccion;
+    pagina_publica('Registro de empresa', '#14395e', function () use ($todas, $token, $idsSel, $esOtras, $sinElegir) {
+        ?>
+        <header class="header-layout"><h1>Registro de empresa colaboradora</h1>
+          <p class="subtitle">Seleccione la o las familias profesionales con las que desea colaborar</p></header>
+        <?php if ($sinElegir): ?>
+          <div style="background:#fdeceb;color:#8c2118;padding:12px 16px;border-radius:8px;margin-bottom:16px;">Marque al menos una familia profesional para continuar.</div>
+        <?php endif; ?>
+        <p style="font-size:0.9rem;opacity:.8;">Puede marcar varias si su empresa trabaja con más de una.</p>
+        <form method="get" action="registro.php">
+          <input type="hidden" name="t" value="<?= e($token) ?>">
+          <input type="hidden" name="elegido" value="1">
+          <div class="familias-lista">
+            <?php foreach ($todas as $f): ?>
+              <label><input type="checkbox" name="familias[]" value="<?= (int) $f['id'] ?>"
+                <?= in_array((int) $f['id'], $idsSel, true) ? 'checked' : '' ?>> <?= e($f['nombre']) ?></label>
+            <?php endforeach; ?>
+            <label><input type="checkbox" name="familias[]" value="otras" <?= $esOtras ? 'checked' : '' ?>> Otras familias profesionales</label>
+          </div>
+          <div class="form-group" style="margin-top:24px;">
+            <button class="btn-print" type="submit" style="font-size:1rem;padding:12px 28px;border:none;border-radius:6px;color:#fff;cursor:pointer;font-weight:600;">Continuar</button>
+          </div>
+        </form>
+        <?php
     });
     exit;
 }
 
-$d = datos_familia($familia['nombre']);
+// Paso 2: formulario de la empresa para las familias elegidas.
+$todas = familias();
+$filasSel = array_values(array_filter($todas, fn($f) => in_array((int) $f['id'], $idsSel, true)));
+$acento = $filasSel ? datos_familia($filasSel[0]['nombre'])['acento'] : '#14395e';
+$nombresSel = array_column($filasSel, 'nombre');
+if ($esOtras) {
+    $nombresSel[] = 'Otras familias profesionales';
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($esPost) {
     comprobar_csrf();
 
     // Campo trampa para bots: si viene relleno, se finge éxito sin guardar nada.
@@ -94,8 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    $_POST['ciclos'] = ciclos_permitidos((array) ($_POST['ciclos'] ?? []), $idsSel);
     $datos = datos_empresa_desde_post();
     $errores = errores_empresa($datos);
+
+    if (!$haySeleccion) {
+        $errores[] = 'Seleccione al menos una familia profesional.';
+    }
 
     $duplicada = empresa_duplicada_por_cif($datos['cif']);
     if ($duplicada !== null) {
@@ -105,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $familiaOtra = trim((string) ($_POST['familia_otra'] ?? ''));
     if ($esOtras) {
         if ($familiaOtra === '') {
-            $errores[] = 'Indique a qué familia profesional pertenece su actividad.';
+            $errores[] = 'Indique a qué otra familia profesional pertenece su actividad.';
         } else {
             $datos['observaciones'] = trim('Familia profesional indicada por la empresa: ' . $familiaOtra
                 . ($datos['observaciones'] ? "\n" . $datos['observaciones'] : ''));
@@ -117,24 +142,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errores) {
-        $datos['familia_id'] = $esOtras ? null : (int) $familia['id'];
+        $datos['familia_id'] = $idsSel[0] ?? null;
         $datos['estado'] = 'Pendiente';
         $datos['origen'] = 'externo';
         $cols = implode(', ', array_keys($datos));
         $vals = ':' . implode(', :', array_keys($datos));
         db()->prepare("INSERT INTO empresas ($cols) VALUES ($vals)")->execute($datos);
+        guardar_familias_empresa((int) db()->lastInsertId(), $idsSel);
         header('Location: registro.php?t=' . urlencode($token) . '&gracias=1');
         exit;
     }
     $em = $datos;
 }
 
-pagina_publica('Registro de empresa', $d['acento'], function () use ($familia, $token, $errores, $em, $d, $esOtras) {
+$bloquesFamilias = $filasSel;
+$enlaceCambiar = 'registro.php?' . http_build_query([
+    't' => $token, 'elegir' => 1, 'familias' => array_merge($idsSel, $esOtras ? ['otras'] : []),
+]);
+
+pagina_publica('Registro de empresa', $acento, function () use ($token, $errores, $em, $esOtras, $idsSel, $nombresSel, $bloquesFamilias, $enlaceCambiar) {
     ?>
   <header class="header-layout" style="text-align:center;">
     <h1>Registro de empresa colaboradora</h1>
-    <p class="subtitle">Formación Profesional &ndash; <?= e($familia['nombre']) ?></p>
-    <p class="req-info">Los campos con (*) son obligatorios.</p>
+    <p class="subtitle">Formación Profesional &ndash; <?= e(implode(' · ', $nombresSel)) ?></p>
+    <p class="req-info">Los campos con (*) son obligatorios. <a href="<?= e($enlaceCambiar) ?>">Cambiar familias</a></p>
   </header>
 
   <?php if ($errores): ?>
@@ -146,10 +177,11 @@ pagina_publica('Registro de empresa', $d['acento'], function () use ($familia, $
   <form method="post">
     <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
     <input type="hidden" name="t" value="<?= e($token) ?>">
-    <input type="hidden" name="familia" value="<?= $esOtras ? 'otras' : (int) $familia['id'] ?>">
+    <?php foreach ($idsSel as $fid): ?><input type="hidden" name="familias[]" value="<?= (int) $fid ?>"><?php endforeach; ?>
+    <?php if ($esOtras): ?><input type="hidden" name="familias[]" value="otras"><?php endif; ?>
     <div class="trampa" aria-hidden="true"><label>No rellenar<input type="text" name="sitio_web_extra" tabindex="-1" autocomplete="off"></label></div>
     <?php if ($esOtras): ?>
-      <div class="form-group"><label>¿A qué familia profesional pertenece su actividad? <span class="req">(*)</span>:</label>
+      <div class="form-group"><label>¿A qué otra familia profesional pertenece su actividad? <span class="req">(*)</span>:</label>
         <input type="text" name="familia_otra" required maxlength="120" value="<?= e((string) ($_POST['familia_otra'] ?? '')) ?>"
           placeholder="Ej.: Informática y Comunicaciones, Administración y Gestión…"></div>
     <?php endif; ?>

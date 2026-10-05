@@ -37,7 +37,7 @@ require __DIR__ . '/cabecera.php';
       <input id="enlace" type="text" readonly value="<?= e($enlace) ?>" style="flex:1 1 320px;">
       <button class="boton boton--primario" type="button" id="copiar">Copiar enlace</button>
     </div>
-    <p class="meta">La empresa podrá elegir su familia profesional al abrirlo.
+    <p class="meta">La empresa podrá elegir una o varias familias profesionales al abrirlo.
       <?php if ($fechaToken): ?>Caduca automáticamente el
         <?= e(date('d/m/Y', strtotime($fechaToken) + DIAS_CADUCIDAD_ENLACE * 86400)) ?>.<?php endif; ?></p>
 

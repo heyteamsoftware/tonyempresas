@@ -6,9 +6,9 @@ require __DIR__ . '/empresa_lib.php';
 exigir_sesion();
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$familiaId = isset($_GET['familia']) ? (int) $_GET['familia'] : 0;
 $errores = [];
 $em = [];
+$todas = familias();
 
 if ($id > 0) {
     $st = db()->prepare('SELECT * FROM empresas WHERE id = ? AND eliminada_en IS NULL');
@@ -18,23 +18,21 @@ if ($id > 0) {
         http_response_code(404);
         exit('Empresa no encontrada. Si está en la papelera, restáurala primero.');
     }
-    $familiaId = (int) $em['familia_id'];
+    $idsSel = array_map(fn($f) => (int) $f['id'], familias_de_empresa($id));
+} else {
+    $idsSel = familias_desde_request($_GET)['ids'];
 }
-
-$st = db()->prepare('SELECT id, nombre FROM familias WHERE id = ?');
-$st->execute([$familiaId]);
-$familia = $st->fetch();
-if (!$familia) {
-    http_response_code(404);
-    exit('Selecciona una familia profesional válida desde "Nueva empresa".');
-}
-
-$d = datos_familia($familia['nombre']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     comprobar_csrf();
+    $idsSel = ids_familias_validos((array) ($_POST['familias'] ?? []));
+    $_POST['ciclos'] = ciclos_permitidos((array) ($_POST['ciclos'] ?? []), $idsSel);
+
     $datos = datos_empresa_desde_post();
     $errores = errores_empresa($datos);
+    if (!$idsSel) {
+        $errores[] = 'Selecciona al menos una familia profesional.';
+    }
 
     $duplicada = empresa_duplicada_por_cif($datos['cif'], $id);
     if ($duplicada !== null) {
@@ -42,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errores) {
-        $datos['familia_id'] = (int) $familia['id'];
+        $datos['familia_id'] = $idsSel[0];
         if ($id > 0) {
             // El estado sólo se puede cambiar editando una empresa ya existente
             // (al darla de alta siempre empieza "Pendiente", se revisa después).
@@ -61,11 +59,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id  = (int) db()->lastInsertId();
             $msg = 'Empresa registrada correctamente. Queda como "Pendiente" hasta que se revise.';
         }
+        guardar_familias_empresa($id, $idsSel);
         header('Location: ficha.php?id=' . $id . '&ok=' . rawurlencode($msg));
         exit;
     }
     $em = array_merge($em, $datos);
 }
+
+$filasSel = array_values(array_filter($todas, fn($f) => in_array((int) $f['id'], $idsSel, true)));
+$acento = $filasSel ? datos_familia($filasSel[0]['nombre'])['acento'] : '#14395e';
+$nombresSel = implode(' · ', array_column($filasSel, 'nombre'));
+$bloquesFamilias = $todas;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -73,10 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title><?= $id > 0 ? 'Editar empresa' : 'Alta de empresa' ?> · <?= e($familia['nombre']) ?></title>
-<link rel="stylesheet" href="assets/cuestionario.css">
+<title><?= $id > 0 ? 'Editar empresa' : 'Alta de empresa' ?> · <?= e(APP_NAME) ?></title>
+<link rel="stylesheet" href="assets/cuestionario.css?v=<?= @filemtime(__DIR__ . '/assets/cuestionario.css') ?: '1' ?>">
 <link rel="icon" type="image/svg+xml" href="assets/icono.svg">
-<style>:root { --accent-color: <?= e($d['acento']) ?>; }</style>
+<style>:root { --accent-color: <?= e($acento) ?>; }</style>
 </head>
 <body class="cuestionario">
 
@@ -90,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <header class="header-layout" style="text-align:center;">
     <h1><?= $id > 0 ? 'Editar empresa' : 'Alta de empresa colaboradora' ?></h1>
-    <p class="subtitle">Formación Profesional &ndash; <?= e($familia['nombre']) ?></p>
+    <p class="subtitle" id="subtitulo-familias">Formación Profesional<?= $nombresSel !== '' ? ' &ndash; ' . e($nombresSel) : '' ?></p>
     <p class="req-info">Los campos con (*) son obligatorios.</p>
   </header>
 
@@ -102,6 +106,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <form method="post">
     <input type="hidden" name="csrf" value="<?= e(token_csrf()) ?>">
+
+    <h2>Familias profesionales <span class="req">(*)</span></h2>
+    <p style="font-size:0.85rem;opacity:.8;margin:0 0 6px;">Puede pertenecer a varias: marca todas las que correspondan.</p>
+    <div class="option-group">
+      <?php foreach ($todas as $f): ?>
+        <label class="option-item"><input type="checkbox" name="familias[]" value="<?= (int) $f['id'] ?>"
+          <?= in_array((int) $f['id'], $idsSel, true) ? 'checked' : '' ?>> <?= e($f['nombre']) ?></label>
+      <?php endforeach; ?>
+    </div>
+
     <?php require __DIR__ . '/_campos_empresa.php'; ?>
 
     <?php if ($id > 0): ?>
@@ -125,6 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </form>
 </div>
 
-<script src="assets/cuestionario.js"></script>
+<script src="assets/cuestionario.js?v=<?= @filemtime(__DIR__ . '/assets/cuestionario.js') ?: '1' ?>"></script>
 </body>
 </html>

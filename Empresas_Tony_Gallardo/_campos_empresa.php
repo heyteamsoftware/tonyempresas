@@ -1,4 +1,4 @@
-<?php /** Campos del formulario simplificado. Requiere $em (valores) y $d (datos de la familia). */ ?>
+<?php /** Campos del formulario simplificado. Requiere $em (valores), $bloquesFamilias (familias cuyos ciclos se ofrecen) e $idsSel (ids elegidos). */ ?>
 <h2>1. La empresa</h2>
 <div class="grid">
   <div class="form-group full-width"><label>Nombre o razón social <span class="req">(*)</span>:</label>
@@ -24,15 +24,21 @@
 </div>
 
 <h2>3. Prácticas del alumnado</h2>
-<?php if ($d['ciclos']): ?>
-  <label>Ciclos de los que puede acoger alumnado:</label>
-  <div class="option-group">
-    <?php foreach ($d['ciclos'] as $c): ?>
-      <label class="option-item"><input type="checkbox" name="ciclos[]" value="<?= e($c) ?>"
-        <?= marcado($c, $em['ciclos'] ?? null) ? 'checked' : '' ?>> <?= e($c) ?></label>
-    <?php endforeach; ?>
+<?php foreach ($bloquesFamilias as $bf):
+    $ciclosFam = datos_familia($bf['nombre'])['ciclos'];
+    if (!$ciclosFam) { continue; }
+    $visible = in_array((int) $bf['id'], $idsSel, true);
+?>
+  <div class="ciclos-familia" data-familia="<?= (int) $bf['id'] ?>" <?= $visible ? '' : 'hidden' ?>>
+    <label>Ciclos de <?= e($bf['nombre']) ?> de los que puede acoger alumnado:</label>
+    <div class="option-group">
+      <?php foreach ($ciclosFam as $c): ?>
+        <label class="option-item"><input type="checkbox" name="ciclos[]" value="<?= e($c) ?>"
+          <?= marcado($c, $em['ciclos'] ?? null) ? 'checked' : '' ?>> <?= e($c) ?></label>
+      <?php endforeach; ?>
+    </div>
   </div>
-<?php endif; ?>
+<?php endforeach; ?>
 <div class="form-group" style="max-width:420px;margin-top:10px;">
   <label>Otro ciclo (si no está en la lista):</label>
   <input type="text" name="ciclos_otro" maxlength="120" placeholder="Escríbelo aquí"

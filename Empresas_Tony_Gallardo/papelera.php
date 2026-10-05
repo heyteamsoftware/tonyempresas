@@ -18,11 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $lista = db()->query(
-    "SELECT e.id, e.nombre, e.eliminada_en, f.nombre AS familia_nombre
-     FROM empresas e LEFT JOIN familias f ON f.id = e.familia_id
+    "SELECT e.id, e.nombre, e.eliminada_en
+     FROM empresas e
      WHERE e.eliminada_en IS NOT NULL
      ORDER BY e.eliminada_en DESC"
 )->fetchAll();
+$mapaFamilias = familias_por_empresa(array_column($lista, 'id'));
 
 $titulo = 'Papelera';
 require __DIR__ . '/cabecera.php';
@@ -41,7 +42,7 @@ require __DIR__ . '/cabecera.php';
     <?php $limite = strtotime($em['eliminada_en']) + DIAS_PAPELERA * 86400; ?>
     <tr>
       <td><?= e($em['nombre']) ?></td>
-      <td><?= e($em['familia_nombre'] ?? 'Sin familia') ?></td>
+      <td><?= e(isset($mapaFamilias[(int) $em['id']]) ? implode(', ', array_column($mapaFamilias[(int) $em['id']], 'nombre')) : 'Sin familia') ?></td>
       <td><?= e(date('d/m/Y H:i', strtotime($em['eliminada_en']))) ?></td>
       <td><?= e(date('d/m/Y H:i', $limite)) ?></td>
       <td style="display:flex; gap:8px;">

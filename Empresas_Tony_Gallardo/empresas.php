@@ -10,14 +10,28 @@ $estado    = trim((string) ($_GET['estado'] ?? ''));
 
 $empresas = buscar_empresas($busqueda, $familiaId, $estado);
 
-// Agrupadas por familia profesional (guardamos también el id para los cuestionarios).
+// Agrupadas por familia profesional: una empresa de varias familias aparece en cada una.
+$mapaFamilias = familias_por_empresa(array_column($empresas, 'id'));
 $grupos = [];
+foreach (familias() as $f) {
+    $grupos[(int) $f['id']] = ['nombre' => $f['nombre'], 'familia_id' => (int) $f['id'], 'empresas' => []];
+}
+$sinFamilia = [];
 foreach ($empresas as $em) {
-    $clave = $em['familia_nombre'] ?? 'Sin familia asignada';
-    if (!isset($grupos[$clave])) {
-        $grupos[$clave] = ['familia_id' => $em['familia_id'], 'empresas' => []];
+    $fs = $mapaFamilias[(int) $em['id']] ?? [];
+    if (!$fs) {
+        $sinFamilia[] = $em;
+        continue;
     }
-    $grupos[$clave]['empresas'][] = $em;
+    foreach ($fs as $f) {
+        $grupos[$f['id']]['empresas'][] = $em;
+    }
+}
+$grupos = array_filter($grupos, fn($g) => $g['empresas']);
+if ($familiaId > 0) {
+    $grupos = array_filter($grupos, fn($k) => $k === $familiaId, ARRAY_FILTER_USE_KEY);
+} elseif ($sinFamilia) {
+    $grupos['sin'] = ['nombre' => 'Sin familia asignada', 'familia_id' => null, 'empresas' => $sinFamilia];
 }
 
 $total  = count($empresas);
@@ -33,7 +47,7 @@ require __DIR__ . '/cabecera.php';
 
 <section class="resumen">
   <div class="tarjeta-dato"><strong><?= $total ?></strong><span>empresas</span></div>
-  <div class="tarjeta-dato"><strong><?= count($grupos) ?></strong><span>familias con empresas</span></div>
+  <div class="tarjeta-dato"><strong><?= count(array_filter($grupos, fn($g) => $g['familia_id'])) ?></strong><span>familias con empresas</span></div>
   <div class="tarjeta-dato"><strong><?= $plazas ?></strong><span>plazas ofertadas</span></div>
 </section>
 
@@ -60,12 +74,12 @@ require __DIR__ . '/cabecera.php';
 </form>
 
 <?php if ($total === 0): ?>
-  <p class="vacio">No hay empresas que coincidan. <a href="formulario.php">Añade la primera</a>.</p>
+  <p class="vacio">No hay empresas que coincidan. <a href="nueva_empresa.php">Añade la primera</a>.</p>
 <?php else: ?>
-  <?php foreach ($grupos as $nombreFamilia => $grupo): ?>
+  <?php foreach ($grupos as $grupo): ?>
     <section class="familia">
       <h2 class="familia__titulo">
-        <?= e($nombreFamilia) ?>
+        <?= e($grupo['nombre']) ?>
         <span class="familia__conteo"><?= count($grupo['empresas']) ?></span>
         <?php if ($grupo['familia_id']): ?>
           <span class="familia__cuestionarios">
@@ -88,13 +102,13 @@ require __DIR__ . '/cabecera.php';
               <?php if ($em['telefono']): ?><li>📞 <?= e($em['telefono']) ?></li><?php endif; ?>
               <?php if ($em['contacto_nombre']): ?><li>👤 <?= e($em['contacto_nombre']) ?></li><?php endif; ?>
               <li>🎓 <?= (int) $em['plazas'] ?> plazas<?= $em['convenio'] ? ' · convenio firmado' : '' ?></li>
+              <?php $famsEmpresa = $mapaFamilias[(int) $em['id']] ?? []; ?>
+              <?php if (count($famsEmpresa) > 1): ?>
+                <li>🏷️ <?= e(implode(' · ', array_column($famsEmpresa, 'nombre'))) ?></li>
+              <?php endif; ?>
             </ul>
             <div class="tarjeta__acciones">
-              <?php if ($em['familia_id']): ?>
-                <a href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
-              <?php else: ?>
-                <a href="formulario.php?id=<?= (int) $em['id'] ?>">Editar</a>
-              <?php endif; ?>
+              <a href="cuestionario_empresa.php?id=<?= (int) $em['id'] ?>">Editar</a>
             </div>
           </article>
         <?php endforeach; ?>

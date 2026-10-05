@@ -63,10 +63,7 @@ function datos_empresa_desde_post(): array
 /** Empresas (no en papelera) según los mismos filtros del listado: texto, familia y estado. */
 function buscar_empresas(string $busqueda, int $familiaId, string $estado): array
 {
-    $sql = 'SELECT e.*, f.nombre AS familia_nombre
-            FROM empresas e
-            LEFT JOIN familias f ON f.id = e.familia_id
-            WHERE e.eliminada_en IS NULL';
+    $sql = 'SELECT e.* FROM empresas e WHERE e.eliminada_en IS NULL';
     $params = [];
 
     if ($busqueda !== '') {
@@ -82,18 +79,113 @@ function buscar_empresas(string $busqueda, int $familiaId, string $estado): arra
         $params['b5'] = $comodin;
     }
     if ($familiaId > 0) {
-        $sql .= ' AND e.familia_id = :f';
+        $sql .= ' AND EXISTS (SELECT 1 FROM empresa_familias ef WHERE ef.empresa_id = e.id AND ef.familia_id = :f)';
         $params['f'] = $familiaId;
     }
     if (in_array($estado, ESTADOS, true)) {
         $sql .= ' AND e.estado = :e';
         $params['e'] = $estado;
     }
-    $sql .= ' ORDER BY f.orden IS NULL, f.orden, f.nombre, e.nombre';
+    $sql .= ' ORDER BY e.nombre';
 
     $st = db()->prepare($sql);
     $st->execute($params);
     return $st->fetchAll();
+}
+
+/** Familias (id, nombre) de una empresa, en el orden del catálogo. */
+function familias_de_empresa(int $empresaId): array
+{
+    $st = db()->prepare(
+        'SELECT f.id, f.nombre FROM empresa_familias ef
+         JOIN familias f ON f.id = ef.familia_id
+         WHERE ef.empresa_id = ? ORDER BY f.orden, f.nombre'
+    );
+    $st->execute([$empresaId]);
+    return $st->fetchAll();
+}
+
+/** [empresa_id => [[id, nombre], ...]] para varias empresas de una vez. */
+function familias_por_empresa(array $empresaIds): array
+{
+    $empresaIds = array_values(array_unique(array_map('intval', $empresaIds)));
+    if (!$empresaIds) {
+        return [];
+    }
+    $marcas = implode(',', array_fill(0, count($empresaIds), '?'));
+    $st = db()->prepare(
+        "SELECT ef.empresa_id, f.id, f.nombre FROM empresa_familias ef
+         JOIN familias f ON f.id = ef.familia_id
+         WHERE ef.empresa_id IN ($marcas) ORDER BY f.orden, f.nombre"
+    );
+    $st->execute($empresaIds);
+    $mapa = [];
+    foreach ($st->fetchAll() as $r) {
+        $mapa[(int) $r['empresa_id']][] = ['id' => (int) $r['id'], 'nombre' => $r['nombre']];
+    }
+    return $mapa;
+}
+
+/** Sólo los ids que existen en el catálogo, sin repetir y en el orden del catálogo. */
+function ids_familias_validos(array $ids): array
+{
+    $ids = array_map('intval', $ids);
+    $validos = [];
+    foreach (familias() as $f) {
+        if (in_array((int) $f['id'], $ids, true)) {
+            $validos[] = (int) $f['id'];
+        }
+    }
+    return $validos;
+}
+
+/**
+ * Familias elegidas en una petición: familias[]=1&familias[]=2, familias=1,2
+ * o la antigua familia=1; el valor "otras" marca "Otras familias profesionales".
+ * @return array{ids: list<int>, otras: bool}
+ */
+function familias_desde_request(array $src): array
+{
+    $crudo = [];
+    foreach (['familias', 'familia'] as $clave) {
+        if (!isset($src[$clave])) {
+            continue;
+        }
+        foreach ((array) $src[$clave] as $valor) {
+            foreach (explode(',', (string) $valor) as $x) {
+                $crudo[] = trim($x);
+            }
+        }
+    }
+    return [
+        'ids'   => ids_familias_validos(array_filter($crudo, fn($x) => ctype_digit($x))),
+        'otras' => in_array('otras', $crudo, true),
+    ];
+}
+
+/** Sustituye las familias de la empresa; empresas.familia_id queda como la primera (principal). */
+function guardar_familias_empresa(int $empresaId, array $ids): void
+{
+    $ids = ids_familias_validos($ids);
+    $pdo = db();
+    $pdo->prepare('DELETE FROM empresa_familias WHERE empresa_id = ?')->execute([$empresaId]);
+    $ins = $pdo->prepare('INSERT INTO empresa_familias (empresa_id, familia_id) VALUES (?, ?)');
+    foreach ($ids as $fid) {
+        $ins->execute([$empresaId, $fid]);
+    }
+    $pdo->prepare('UPDATE empresas SET familia_id = ? WHERE id = ?')->execute([$ids[0] ?? null, $empresaId]);
+}
+
+/** De los ciclos marcados, sólo los que pertenecen a alguna de las familias elegidas. Requiere datos_familias.php. */
+function ciclos_permitidos(array $marcados, array $idsFamilias): array
+{
+    $permitidos = [];
+    foreach (familias() as $f) {
+        if (in_array((int) $f['id'], $idsFamilias, true)) {
+            $permitidos = array_merge($permitidos, datos_familia($f['nombre'])['ciclos']);
+        }
+    }
+    return array_values(array_intersect($marcados, $permitidos));
 }
 
 /** Nombre de la empresa que ya tiene ese CIF, o null si no hay ninguna (fuera de $idActual). */
