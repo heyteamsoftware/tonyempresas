@@ -113,6 +113,12 @@ a { color: var(--azul-claro); }
 .barra__marca small { display: block; font-weight: 400; opacity: .75; font-size: 12px; }
 .barra__nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .barra__nav > a { color: #fff; text-decoration: none; }
+.contador-visitas {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255, 255, 255, .15); color: #fff;
+  padding: 4px 10px; border-radius: 999px; font-size: 14px;
+}
+.contador-visitas strong { font-weight: 700; }
 .aviso-contador {
   background: var(--acento); color: #3a2405 !important; font-weight: 700;
   font-size: 13px; padding: 3px 10px; border-radius: 999px;

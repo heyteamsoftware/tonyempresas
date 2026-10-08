@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/config.php';
 require __DIR__ . '/empresa_lib.php';
 iniciar_sesion();
+registrar_visitante();
 
 if (sesion_valida()) {
     header('Location: empresas.php');

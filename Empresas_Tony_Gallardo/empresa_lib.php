@@ -316,6 +316,28 @@ function purgar_papelera(): void
     db()->prepare('DELETE FROM empresas WHERE eliminada_en IS NOT NULL AND eliminada_en < (NOW() - INTERVAL ' . DIAS_PAPELERA . ' DAY)')->execute();
 }
 
+/** Anota el navegador como visitante (identificador aleatorio en cookie, sin IP ni datos personales). */
+function registrar_visitante(): void
+{
+    $id = (string) ($_COOKIE['visitante'] ?? '');
+    if (!preg_match('/^[a-f0-9]{32}$/', $id)) {
+        $id = bin2hex(random_bytes(16));
+        setcookie('visitante', $id, [
+            'expires'  => time() + 365 * 86400,
+            'path'     => '/',
+            'httponly' => true,
+            'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            'samesite' => 'Lax',
+        ]);
+    }
+    db()->prepare('INSERT IGNORE INTO visitantes (id) VALUES (?)')->execute([$id]);
+}
+
+function total_visitantes(): int
+{
+    return (int) db()->query('SELECT COUNT(*) FROM visitantes')->fetchColumn();
+}
+
 function url_base_app(): string
 {
     $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';

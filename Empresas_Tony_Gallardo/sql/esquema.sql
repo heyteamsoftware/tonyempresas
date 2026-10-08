@@ -75,6 +75,12 @@ CREATE TABLE IF NOT EXISTS empresa_familias (
   CONSTRAINT fk_ef_familia FOREIGN KEY (familia_id) REFERENCES familias (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Personas distintas que han entrado (identificador aleatorio en cookie, sin IP).
+CREATE TABLE IF NOT EXISTS visitantes (
+  id        CHAR(32) NOT NULL PRIMARY KEY,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS ajustes (
   clave VARCHAR(50)  NOT NULL PRIMARY KEY,
   valor VARCHAR(255) NOT NULL
